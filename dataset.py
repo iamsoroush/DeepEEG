@@ -371,10 +371,7 @@ class VarLenGenerator(Generator):
                 sub_array = (sub_array - ch_wise_mean) / (ch_wise_std + 0.00001)
             else:
                 time_wise_mean = sub_array.mean(axis=1, keepdims=True)
-                time_wise_std = sub_array.std(axis=1, keepdims=True)
-                if np.any(time_wise_std > 120) or np.any(time_wise_std < 1):
-                    continue
-                sub_array = (sub_array - time_wise_mean) / (time_wise_std + 0.00001)
+                sub_array = sub_array - time_wise_mean
 
             # ch_wise_mean = sub_array.mean(axis=0, keepdims=True)
             # ch_wise_std = sub_array.std(axis=0, keepdims=True)
