@@ -136,7 +136,7 @@ class CrossValidator:
             return
 
         scores = np.array(list(np.load(self.scores_path, allow_pickle=True)[:, 0]))
-        keys = ['MSE Loss', 'Accuracy', 'F1-Score', 'Sensitivity', 'Specificity']
+        keys = ['Loss', 'Accuracy', 'F1-Score', 'Sensitivity', 'Specificity']
         fig, ax = plt.subplots(figsize=(20, 8), dpi=dpi)
 
         x_coord = 0.8
@@ -148,7 +148,7 @@ class CrossValidator:
                 linewidth = 2
                 alpha = 0.8
                 ax.plot(values, linewidth=linewidth, marker='o', alpha=alpha)
-            elif key == 'MSE Loss':
+            elif key == 'Loss':
                 pass
             else:
                 ax.plot(values, linewidth=linewidth, alpha=alpha)
