@@ -1,16 +1,7 @@
 # -*- coding: utf-8 -*-
 """Model definitions.
-
-Instantiate your desired model and fit, evaluate, and predict using that:
-    import YourModel from models
-    model = YourModel()
-    model.create_model()
-    model.compile()
-    model.train()
 """
 # Author: Soroush Moazed <soroush.moazed@gmail.com>
-
-import os
 
 import matplotlib.pyplot as plt
 
