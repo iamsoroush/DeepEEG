@@ -272,10 +272,7 @@ class FixedLenGenerator(Generator):
                 instance = (instance - ch_wise_mean) / ch_wise_std
             else:
                 time_wise_mean = instance.mean(axis=1, keepdims=True)
-                time_wise_std = instance.std(axis=1, keepdims=True)
-                if np.any(time_wise_std > 100) or np.any(time_wise_std < 1):
-                    continue
-                instance = (instance - time_wise_mean) / (time_wise_std + 0.0001)
+                instance = instance - time_wise_mean
             instances.append(instance)
         return instances
 
