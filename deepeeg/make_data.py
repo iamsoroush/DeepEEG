@@ -73,6 +73,7 @@ def generate_data(src_dir, dst_dir, n_channels=19):
             file_name = os.path.basename(path)
             if file_name in ignore:
                 print('ignored ', file_name)
+                pbar.update(1)
                 continue
             raw = mne.io.read_raw_edf(path, preload=True, verbose=False)
             raw.pick_types(eeg=True)
