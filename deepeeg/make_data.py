@@ -52,10 +52,10 @@ def generate_data(src_dir, dst_dir, n_channels=19):
     """Loads each trial, multiplies by 1e6 and saves  the normalized array as numpy array.
     """
 
-    ignore = ['H_S14_EO.edf', 'H_S18_EO.edf', 'H_S19_EO.edf', 'H_S21_EO.edf', 'H_S22_EO.edf', 'H_S23_EO.edf',
-              'H_S26_EO.edf', 'H_S4_EO.edf', 'H_S5_EO.edf', 'H_S8_EO.edf', 'H_S9_EO.edf', 'MDD_S23_EO.edf',
-              'MDD_S5_EO.edf', 'H_S13_EC.edf', 'H_S14_EC.edf', 'H_S15_EC.edf', 'H_S19_EC.edf', 'H_S21_EC.edf',
-              'H_S23_EC.edf', 'H_S26_EC.edf', 'H_S4_EC.edf', 'H_S5_EC.edf', 'H_S8_EC.edf', 'MDD_S27_EC.edf']
+    ignore = ['H S14 EO.edf', 'H S18 EO.edf', 'H S19 EO.edf', 'H S21 EO.edf', 'H S22 EO.edf', 'H S23 EO.edf',
+              'H S26 EO.edf', 'H S4 EO.edf', 'H S5 EO.edf', 'H S8 EO.edf', 'H S9 EO.edf', 'MDD S23 EO.edf',
+              'MDD S5 EO.edf', 'H S13 EC.edf', 'H S14 EC.edf', 'H S15 EC.edf', 'H S19 EC.edf', 'H S21 EC.edf',
+              'H S23 EC.edf', 'H S26 EC.edf', 'H S4 EC.edf', 'H S5 EC.edf', 'H S8 EC.edf', 'MDD S27 EC.edf']
 
     df = generate_df(src_dir)
     s = df.iloc[0]
