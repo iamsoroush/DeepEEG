@@ -52,6 +52,11 @@ def generate_data(src_dir, dst_dir, n_channels=19):
     """Loads each trial, multiplies by 1e6 and saves  the normalized array as numpy array.
     """
 
+    ignore = ['H_S14_EO.edf', 'H_S18_EO.edf', 'H_S19_EO.edf', 'H_S21_EO.edf', 'H_S22_EO.edf', 'H_S23_EO.edf',
+              'H_S26_EO.edf', 'H_S4_EO.edf', 'H_S5_EO.edf', 'H_S8_EO.edf', 'H_S9_EO.edf', 'MDD_S23_EO.edf',
+              'MDD_S5_EO.edf', 'H_S13_EC.edf', 'H_S14_EC.edf', 'H_S15_EC.edf', 'H_S19_EC.edf', 'H_S21_EC.edf',
+              'H_S23_EC.edf', 'H_S26_EC.edf', 'H_S4_EC.edf', 'H_S5_EC.edf', 'H_S8_EC.edf', 'MDD_S27_EC.edf']
+
     df = generate_df(src_dir)
     s = df.iloc[0]
     raw = mne.io.read_raw_edf(s['Path'], preload=True, verbose=False)
@@ -65,6 +70,9 @@ def generate_data(src_dir, dst_dir, n_channels=19):
     with tqdm(total=len(df)) as pbar:
         for i, subject in enumerate(df.values):
             path = subject[0]
+            file_name = os.path.basename(path)
+            if file_name in ignore:
+                continue
             raw = mne.io.read_raw_edf(path, preload=True, verbose=False)
             raw.pick_types(eeg=True)
             raw.pick_channels(channels)
