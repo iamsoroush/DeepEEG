@@ -203,7 +203,7 @@ class FixedLenGenerator(Generator):
                  overlap,
                  sampling_rate,
                  is_train,
-                 normalization='time'):
+                 normalization='channel'):
         super().__init__(True,
                          is_train)
         assert normalization in ('channel', 'instance', 'time'),\
@@ -269,7 +269,7 @@ class FixedLenGenerator(Generator):
                 ch_wise_std = instance.std(axis=0, keepdims=True)
                 if np.any(ch_wise_std > 60) or np.any(ch_wise_std < 1):
                     continue
-                instance = (instance - ch_wise_mean) / ch_wise_std
+                instance = (instance - ch_wise_mean) / (ch_wise_std + 0.0001)
             else:
                 time_wise_mean = instance.mean(axis=1, keepdims=True)
                 instance = instance - time_wise_mean
@@ -307,7 +307,7 @@ class VarLenGenerator(Generator):
                  iter_per_group,
                  sampling_rate,
                  is_train,
-                 normalization='time'):
+                 normalization='channel'):
         # Note: Don't use this generator as test set generator yet.
         super().__init__(False,
                          is_train)
