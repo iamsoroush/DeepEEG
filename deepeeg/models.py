@@ -171,22 +171,22 @@ class BaselineDeepEEG(BaseModel):
         # Block 1
         if self.input_dropout:
             x = keras.layers.SpatialDropout1D(self.spatial_dropout_rate)(input_tensor)
-            x = self._spatio_temporal_conv1d(x, self.n_kernels[0] * 3, 8, 1, 1)
+            x = self._spatio_temporal_conv1d(x, self.n_kernels[0] * 3, 64, 1, 1)
         else:
-            x = self._spatio_temporal_conv1d(input_tensor, self.n_kernels[0] * 3, 8, 1, 1)
+            x = self._spatio_temporal_conv1d(input_tensor, self.n_kernels[0] * 3, 64, 1, 1)
         x = keras.layers.AveragePooling1D(pool_size=self.pool_size,
                                           strides=self.pool_stride)(x)
 
         # Block 2
         x = keras.layers.SpatialDropout1D(self.spatial_dropout_rate)(x)
-        x = self._spatio_temporal_conv1d(x, self.n_kernels[1] * 3, 8, 1, 1)
+        x = self._spatio_temporal_conv1d(x, self.n_kernels[1] * 3, 64, 1, 1)
         x = keras.layers.AveragePooling1D(pool_size=self.pool_size,
                                           strides=self.pool_stride)(x)
 
         # Block 3 - n
         for n_units in self.n_kernels[2:]:
             x = keras.layers.Dropout(self.dropout_rate)(x)
-            x = self._spatio_temporal_conv1d(x, n_units * 3, 8, 1, 1)
+            x = self._spatio_temporal_conv1d(x, n_units * 3, 64, 1, 1)
             x = keras.layers.AveragePooling1D(pool_size=self.pool_size,
                                               strides=self.pool_stride)(x)
 
