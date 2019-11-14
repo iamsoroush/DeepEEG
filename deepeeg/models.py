@@ -140,7 +140,7 @@ class BaselineDeepEEG(BaseModel):
     def __init__(self,
                  input_shape,
                  model_name='DeepEEG',
-                 n_kernels=(6, 6, 8, 8),
+                 n_kernels=(8, 6, 6, 4),
                  spatial_dropout_rate=0.1,
                  dropout_rate=0.2,
                  pool_size=2,
