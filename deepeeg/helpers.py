@@ -131,42 +131,77 @@ class CrossValidator:
         return final_scores
 
     def plot_scores(self, dpi=80):
+
+        def plot_on_ax(scores,  ax, model_name, phase):
+            x_coord = 0.8
+            y_coord = 0.02
+            keys = ['Loss', 'Accuracy', 'F1-Score', 'Sensitivity', 'Specificity']
+            for key, values in zip(keys, scores.T):
+                linewidth = 1
+                alpha = 0.6
+                if key == 'Accuracy':
+                    linewidth = 2
+                    alpha = 0.8
+                    ax.plot(values, linewidth=linewidth, marker='o', alpha=alpha)
+                elif key == 'Loss':
+                    pass
+                else:
+                    ax.plot(values, linewidth=linewidth, alpha=alpha)
+                mean = values.mean()
+                std = values.std(ddof=1)
+                ax.text(x_coord, y_coord, '{}: {:2.3f} +- {:2.3f}'.format(key,
+                                                                          mean,
+                                                                          std),
+                        verticalalignment='bottom', horizontalalignment='left',
+                        transform=ax.transAxes)
+                y_coord += 0.03
+                keys.append(key)
+
+            ax.legend(keys[1:], loc='lower left')
+            ax.set_title(model_name + ' - ', phase)
+            ax.set_xlabel('# Round')
+            ax.set_ylabel('Score')
+
         if not os.path.exists(self.scores_path):
             print('Final scores does not exist.')
             return
 
-        scores = np.array(list(np.load(self.scores_path, allow_pickle=True)[:, 0]))
-        keys = ['Loss', 'Accuracy', 'F1-Score', 'Sensitivity', 'Specificity']
-        fig, ax = plt.subplots(figsize=(20, 8), dpi=dpi)
+        test_scores = np.array(list(np.load(self.scores_path, allow_pickle=True)[:, 0]))
+        train_scores = np.array(list(np.load(self.scores_path, allow_pickle=True)[:, 3]))
 
-        x_coord = 0.8
-        y_coord = 0.02
-        for key, values in zip(keys, scores.T):
-            linewidth = 1
-            alpha = 0.6
-            if key == 'Accuracy':
-                linewidth = 2
-                alpha = 0.8
-                ax.plot(values, linewidth=linewidth, marker='o', alpha=alpha)
-            elif key == 'Loss':
-                pass
-            else:
-                ax.plot(values, linewidth=linewidth, alpha=alpha)
-            mean = values.mean()
-            std = values.std(ddof=1)
-            ax.text(x_coord, y_coord, '{}: {:2.3f} +- {:2.3f}'.format(key,
-                                                                      mean,
-                                                                      std),
-                    verticalalignment='bottom', horizontalalignment='left',
-                    transform=ax.transAxes)
-            y_coord += 0.03
-            keys.append(key)
+        fig, axes = plt.subplots(ncols=1, nrows=2, figsize=(20, 16), dpi=dpi)
 
-        ax.legend(keys[1:], loc='lower left')
-        ax.set_title(self.model_name)
-        ax.set_xlabel('# Round')
-        # ax.set_xticks(range(1, t * k + 1),  direction='vertical')
-        ax.set_ylabel('Score')
+        plot_on_ax(test_scores, axes[0], self.model_name, 'Test')
+        plot_on_ax(train_scores, axes[1], self.model_name, 'Train')
+
+        # x_coord = 0.8
+        # y_coord = 0.02
+        # for key, values in zip(keys, scores.T):
+        #     linewidth = 1
+        #     alpha = 0.6
+        #     if key == 'Accuracy':
+        #         linewidth = 2
+        #         alpha = 0.8
+        #         ax.plot(values, linewidth=linewidth, marker='o', alpha=alpha)
+        #     elif key == 'Loss':
+        #         pass
+        #     else:
+        #         ax.plot(values, linewidth=linewidth, alpha=alpha)
+        #     mean = values.mean()
+        #     std = values.std(ddof=1)
+        #     ax.text(x_coord, y_coord, '{}: {:2.3f} +- {:2.3f}'.format(key,
+        #                                                               mean,
+        #                                                               std),
+        #             verticalalignment='bottom', horizontalalignment='left',
+        #             transform=ax.transAxes)
+        #     y_coord += 0.03
+        #     keys.append(key)
+        #
+        # ax.legend(keys[1:], loc='lower left')
+        # ax.set_title(self.model_name)
+        # ax.set_xlabel('# Round')
+        # # ax.set_xticks(range(1, t * k + 1),  direction='vertical')
+        # ax.set_ylabel('Score')
         # ax.set_ylim(max(0, min_score - 0.2), 1)
         plot_name = '{}.jpg'.format(os.path.basename(self.scores_path).split('.')[0])
         path_to_save = os.path.join(os.path.dirname(self.scores_path), plot_name)
@@ -281,13 +316,13 @@ class CrossValidator:
         """Doing one training-validation step in kfold cross validation.
 
         At the end, saves a numpy array:
-            [[loss, binary_accuracy, f1_score, sensitivity, specificity],
-             [subject-wise_TN, subject-wise_FP, subject-wise_FN, subject-wise_TP],
-             [ch-drop-fpr, ch-drop-tpr, ch-drop-th, ch-drop-roc-auc]]
+            [[test_loss, test_binary_accuracy, test_f1_score, test_sensitivity, test_specificity],
+             [test_subject-wise_TN, test_subject-wise_FP, test_subject-wise_FN, test_subject-wise_TP],
+             [ch-drop-fpr, ch-drop-tpr, ch-drop-th, ch-drop-roc-auc],
+             [train_loss, train_binary_accuracy, train_f1_score, train_sensitivity, train_specificity]]
         """
         loss = model_obj.loss
         optimizer = model_obj.optimizer
-        # metrics = model_obj.metrics
 
         if self.data_mode == 'cross_subject':
             train_data = [data[j] for j in train_ind]
@@ -316,35 +351,60 @@ class CrossValidator:
                             verbose=False,
                             callbacks=[es_callback])
 
-        scores = [list() for _ in range(3)]
-        x_test = list()
-        y_test = list()
-        for i in range(n_iter_test):
-            x_batch, y_batch = next(test_gen)
-            x_test.extend(x_batch)
-            y_test.extend(y_batch)
-        x_test = np.array(x_test)
-        y_test = np.array(y_test)
+        x_test, y_test = self._generate_data_subset(test_gen, n_iter_test)
 
-        y_pred = model.predict(x_test)
-        scores[0].append(mean_squared_error(y_test, y_pred))
-        y_pred = np.where(y_pred > 0.5, 1, 0)
-        tn, fp, fn, tp = confusion_matrix(y_test, y_pred).ravel()
-        scores[0].append((tp + tn) / (tp + tn + fp + fn))
-        scores[0].append(f1_score(y_test, y_pred))
-        scores[0].append(tp / (tp + fn))
-        scores[0].append(tn / (tn + fp))
+        scores = [list() for _ in range(4)]
 
+        # Add test scores
+        scores[0].extend(self._calc_scores(model, x_test, y_test))
+
+        # Add subject-wise test scores
         if self.data_mode == 'cross_subject':
             scores[1].extend(self._calc_subject_wise_scores(model,
                                                             x_test,
                                                             y_test))
 
+        # Add channel-drop scores
         if self.channel_drop:
             scores[2].extend(self._get_channel_drop_scores(x_test,
                                                            y_test,
                                                            model))
+
+        # Add train scores
+        x_train, y_train = self._generate_data_subset(train_gen, n_iter_train)
+        scores[3].extend(self._calc_scores(model, x_train, y_train))
         return np.array(scores)
+
+    @staticmethod
+    def _generate_data_subset(gen, n_iter):
+        x = list()
+        y = list()
+
+        for i in range(n_iter):
+            x_batch, y_batch = next(gen)
+            x.extend(x_batch)
+            y.extend(y_batch)
+        x = np.array(x)
+        y = np.array(y)
+        return x, y
+
+    @staticmethod
+    def _calc_scores(model,
+                     x,
+                     y):
+        scores = list()
+
+        y_pred = model.predict(x)
+        scores.append(mean_squared_error(y, y_pred))
+        y_pred = np.where(y_pred > 0.5, 1, 0)
+        tn, fp, fn, tp = confusion_matrix(y, y_pred).ravel()
+
+        acc = (tp + tn) / (tp + tn + fp + fn)
+        f_score = f1_score(y, y_pred)
+        sensitivity = tp / (tp + fn)
+        specificity = tn / (tn + fp)
+
+        return acc, f_score, sensitivity, specificity
 
     def _calc_subject_wise_scores(self,
                                   model,
