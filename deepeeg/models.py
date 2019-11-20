@@ -327,6 +327,106 @@ class DilatedDeepEEG(BaselineDeepEEG):
         return output
 
 
+class LightDilatedDeepEEG(BaselineDeepEEG):
+    """Spatio-Temporal Dilated Filter Bank CNN, with a reduced number of parameters and the same receptive field.
+
+        The kernel size in STDFB blocks is reduced from 8 to 4.
+
+            The design is based on DWT, i.e. each layer consists of dilated filters that extract features in different
+             frequencies and different contexts.
+
+        Note:
+            Receptive field of each unit before GAP layer is 833 time-steps, about 3 seconds with sampling rate of 256,
+            i.e. each unit before time abstraction layer looks at 3 seconds of input multi-variate time-series.
+    """
+
+    def __init__(self,
+                 input_shape,
+                 model_name='LightDilatedDeepEEG',
+                 **kwargs):
+        super().__init__(input_shape,
+                         model_name,
+                         **kwargs)
+
+    def create_model(self):
+        input_tensor = keras.layers.Input(shape=self.input_shape_,
+                                          name='input_tensor')
+
+        # Block 1
+        if self.input_dropout:
+            x = keras.layers.SpatialDropout1D(self.spatial_dropout_rate)(input_tensor)
+            x = self._spatio_temporal_dilated_filter_bank(input_tensor=x,
+                                                          n_units=self.n_kernels[0],
+                                                          strides=1)
+        else:
+            x = self._spatio_temporal_dilated_filter_bank(input_tensor=input_tensor,
+                                                          n_units=self.n_kernels[0],
+                                                          strides=1)
+        x = keras.layers.AveragePooling1D(pool_size=self.pool_size,
+                                          strides=self.pool_stride)(x)
+
+        # Block 2
+        x = keras.layers.SpatialDropout1D(self.spatial_dropout_rate)(x)
+        x = self._spatio_temporal_dilated_filter_bank(input_tensor=x,
+                                                      n_units=self.n_kernels[1],
+                                                      strides=1)
+        x = keras.layers.AveragePooling1D(pool_size=self.pool_size,
+                                          strides=self.pool_stride)(x)
+
+        # Block 3 - n
+        for n_units in self.n_kernels[2:]:
+            x = keras.layers.Dropout(self.dropout_rate)(x)
+            x = self._spatio_temporal_dilated_filter_bank(input_tensor=x,
+                                                          n_units=n_units,
+                                                          strides=1)
+            x = keras.layers.AveragePooling1D(pool_size=self.pool_size,
+                                              strides=self.pool_stride)(x)
+
+        # Temporal abstraction
+        if self.attention is None:
+            x = keras.layers.GlobalAveragePooling1D()(x)
+        elif self.attention == 'v1':
+            x = TemporalAttention()(x)
+        elif self.attention == 'v2':
+            x = TemporalAttentionV2()(x)
+        else:
+            x = TemporalAttentionV3()(x)
+
+        # Logistic regression unit
+        output_tensor = keras.layers.Dense(1, activation='sigmoid', name='output')(x)
+
+        model = keras.Model(input_tensor, output_tensor)
+        self.model_ = model
+        return model
+
+    def _spatio_temporal_dilated_filter_bank(self, input_tensor, n_units, strides):
+        branch_a = self._spatio_temporal_conv1d(input_tensor=input_tensor,
+                                                filters=n_units,
+                                                kernel_size=3,
+                                                dilation_rate=1,
+                                                strides=strides)
+        branch_a = self._spatio_temporal_conv1d(input_tensor=branch_a,
+                                                filters=n_units,
+                                                kernel_size=3,
+                                                dilation_rate=1,
+                                                strides=strides)
+
+        branch_b = self._spatio_temporal_conv1d(input_tensor=input_tensor,
+                                                filters=n_units,
+                                                kernel_size=4,
+                                                dilation_rate=8,
+                                                strides=strides)
+
+        branch_c = self._spatio_temporal_conv1d(input_tensor=input_tensor,
+                                                filters=n_units,
+                                                kernel_size=4,
+                                                dilation_rate=16,
+                                                strides=strides)
+
+        output = keras.layers.concatenate([branch_a, branch_b, branch_c], axis=-1)
+        return output
+
+
 class WindowedDeepEEG(BaselineDeepEEG):
     """Spatio-Temporal Windowed Filter Bank CNN.
 
