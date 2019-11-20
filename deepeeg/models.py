@@ -412,7 +412,7 @@ class LightDilatedDeepEEG(BaselineDeepEEG):
         branch_b = self._spatio_temporal_conv1d(input_tensor=input_tensor,
                                                 filters=n_units,
                                                 kernel_size=4,
-                                                dilation_rate=8,
+                                                dilation_rate=4,
                                                 strides=strides)
 
         branch_c = self._spatio_temporal_conv1d(input_tensor=input_tensor,
