@@ -106,27 +106,26 @@ class CrossValidator:
         if os.path.exists(self.scores_path):
             print('Final scores already exists.')
             final_scores = np.load(self.scores_path, allow_pickle=True)
-            return final_scores
-
-        train_indices, test_indices = self._get_train_test_indices(data, labels)
-        dir_file_names = os.listdir(self.cv_dir)
-        for i in range(self.t):
-            print('time {}/{}:'.format(i + 1, self.t))
-            for j in range(self.k):
-                print(' step {}/{} ...'.format(j + 1, self.k))
-                ind = int(i * self.k + j)
-                file_name = self.rounds_file_names[ind]
-                file_path = self.rounds_file_paths[ind]
-                if file_name not in dir_file_names:
-                    train_ind = train_indices[i][j]
-                    test_ind = test_indices[i][j]
-                    scores = self._do_train_eval(model_obj,
-                                                 data,
-                                                 labels,
-                                                 train_ind,
-                                                 test_ind)
-                    np.save(file_path, scores)
-        final_scores = self._generate_final_scores()
+        else:
+            train_indices, test_indices = self._get_train_test_indices(data, labels)
+            dir_file_names = os.listdir(self.cv_dir)
+            for i in range(self.t):
+                print('time {}/{}:'.format(i + 1, self.t))
+                for j in range(self.k):
+                    print(' step {}/{} ...'.format(j + 1, self.k))
+                    ind = int(i * self.k + j)
+                    file_name = self.rounds_file_names[ind]
+                    file_path = self.rounds_file_paths[ind]
+                    if file_name not in dir_file_names:
+                        train_ind = train_indices[i][j]
+                        test_ind = test_indices[i][j]
+                        scores = self._do_train_eval(model_obj,
+                                                     data,
+                                                     labels,
+                                                     train_ind,
+                                                     test_ind)
+                        np.save(file_path, scores)
+            final_scores = self._generate_final_scores()
         self.plot_channel_drop_roc()
         self.plot_scores()
         self.plot_subject_wise_scores()
