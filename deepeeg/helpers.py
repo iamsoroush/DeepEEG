@@ -30,7 +30,8 @@ class CrossValidator:
                  t,
                  k,
                  channel_drop=False,
-                 np_random_state=71):
+                 np_random_state=71,
+                 use_early_stopping_callback=True):
         assert task in ('rnr', 'hmdd'), "task must be one of {'rnr', 'hmdd'}"
         assert data_mode in ('cross_subject', 'balanced'), "data_mode must be one of {'cross_subject', 'balanced'}"
 
@@ -45,6 +46,7 @@ class CrossValidator:
         self.k = k
         self.channel_drop = channel_drop
         self.np_random_state = np_random_state
+        self.use_early_stopping_callback = use_early_stopping_callback
         self.cv_dir = None
         self.indices_path = None
         self.scores_path = None
@@ -341,7 +343,11 @@ class CrossValidator:
                                                                       labels=labels,
                                                                       indxs=test_ind)
 
-        es_callback = keras.callbacks.EarlyStopping(monitor='loss', min_delta=0.001, patience=5)
+        if self.use_early_stopping_callback:
+            es_callback = keras.callbacks.EarlyStopping(monitor='loss', min_delta=0.001, patience=5)
+            callbacks = [es_callback]
+        else:
+            callbacks = []
         model = model_obj.create_model()
         model.compile(loss=loss, optimizer=optimizer)
 
@@ -349,14 +355,16 @@ class CrossValidator:
                             steps_per_epoch=n_iter_train,
                             epochs=self.epochs,
                             verbose=False,
-                            callbacks=[es_callback])
+                            callbacks=callbacks)
 
         x_test, y_test = self._generate_data_subset(test_gen, n_iter_test)
 
         scores = [list() for _ in range(4)]
 
         # Add test scores
-        scores[0].extend(self._calc_scores(model, x_test, y_test))
+        test_scores = self._calc_scores(model, x_test, y_test)
+        print('test scores: ', test_scores)
+        scores[0].extend(test_scores)
 
         # Add subject-wise test scores
         if self.data_mode == 'cross_subject':
@@ -372,7 +380,9 @@ class CrossValidator:
 
         # Add train scores
         x_train, y_train = self._generate_data_subset(train_gen, n_iter_train)
-        scores[3].extend(self._calc_scores(model, x_train, y_train))
+        train_scores = self._calc_scores(model, x_train, y_train)
+        scores[3].extend(train_scores)
+        print(train_scores)
         return np.array(scores)
 
     @staticmethod
