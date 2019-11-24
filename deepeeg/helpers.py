@@ -158,7 +158,7 @@ class CrossValidator:
                 y_coord += 0.03
                 keys.append(key)
 
-            ax.legend(keys[1:], loc='lower left')
+            ax.legend(keys, loc='lower left')
             ax.set_title(model_name + ' - ' + phase)
             ax.set_xlabel('# Round')
             ax.set_ylabel('Score')
