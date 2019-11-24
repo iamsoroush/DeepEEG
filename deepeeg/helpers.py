@@ -363,7 +363,7 @@ class CrossValidator:
 
         # Add test scores
         test_scores = self._calc_scores(model, x_test, y_test)
-        print('test scores: ', test_scores)
+        print('     test scores: ', test_scores)
         scores[0].extend(test_scores)
 
         # Add subject-wise test scores
@@ -382,7 +382,7 @@ class CrossValidator:
         x_train, y_train = self._generate_data_subset(train_gen, n_iter_train)
         train_scores = self._calc_scores(model, x_train, y_train)
         scores[3].extend(train_scores)
-        print('train scores: ', train_scores)
+        print('     train scores: ', train_scores)
         return np.array(scores)
 
     @staticmethod
