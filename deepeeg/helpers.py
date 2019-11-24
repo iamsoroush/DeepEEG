@@ -158,7 +158,7 @@ class CrossValidator:
                 keys.append(key)
 
             ax.legend(keys[1:], loc='lower left')
-            ax.set_title(model_name + ' - ', phase)
+            ax.set_title(model_name + ' - ' + phase)
             ax.set_xlabel('# Round')
             ax.set_ylabel('Score')
 
@@ -261,8 +261,8 @@ class CrossValidator:
             print('Final scores does not exist.')
             return
         scores = np.array(list(np.load(self.scores_path, allow_pickle=True)[:, 2]))
-        fprs = np.array(scores[:, 0])
-        tprs = np.array(scores[:, 1])
+        fprs = scores[:, 0]
+        tprs = scores[:, 1]
 
         self._roc_vs_channel_drop(fprs,
                                   tprs)
