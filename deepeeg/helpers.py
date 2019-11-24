@@ -137,7 +137,7 @@ class CrossValidator:
         def plot_on_ax(scores,  ax, model_name, phase):
             x_coord = 0.8
             y_coord = 0.02
-            keys = ['Loss', 'Accuracy', 'F1-Score', 'Sensitivity', 'Specificity']
+            keys = ['Accuracy', 'F1-Score', 'Sensitivity', 'Specificity']
             for key, values in zip(keys, scores.T):
                 linewidth = 1
                 alpha = 0.6
