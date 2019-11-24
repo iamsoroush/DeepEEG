@@ -272,8 +272,8 @@ class CrossValidator:
                              tprs):
         fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(18, 18))
         for i, ax in enumerate(axes.flatten()):
-            fp = fprs[:, i]
-            tp = tprs[:, i]
+            fp = np.array([item[i] for item in fprs])
+            tp = np.array([item[i] for item in tprs])
             self._draw_roc_curve(fp, tp, ax)
             ax.set_title('# Channels Dropped: {}'.format(i ** 2))
 
@@ -442,6 +442,15 @@ class CrossValidator:
                                  x_test,
                                  y_test,
                                  model):
+        """Generates ROC with respect to number of dropped channels for trained model.
+
+        Returns:
+            [[fpr_0dropped, fpr_1dropped, fpr_4dropped, fpr_9dropped],
+             [tpr_0dropped, tpr_1dropped, tpr_4dropped, fpr_9dropped],
+             [thresholds_0dropped, thresholds_1dropped, thresholds_4dropped, thresholds_9dropped],
+             [roc_auc_0dropped, roc_auc_1dropped, roc_auc_4dropped, roc_auc_9dropped]]
+        """
+
         fpr = list()
         tpr = list()
         th = list()
