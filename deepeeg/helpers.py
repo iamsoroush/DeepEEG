@@ -138,16 +138,16 @@ class CrossValidator:
             y_coord = 0.02
             keys = ['Accuracy', 'F1-Score', 'Sensitivity', 'Specificity']
             for key, values in zip(keys, scores.T):
-                linewidth = 1
+                line_width = 1
                 alpha = 0.6
                 if key == 'Accuracy':
-                    linewidth = 2
+                    line_width = 2
                     alpha = 0.8
-                    ax.plot(values, linewidth=linewidth, marker='o', alpha=alpha)
+                    ax.plot(values, linewidth=line_width, marker='o', alpha=alpha)
                 elif key == 'Loss':
                     pass
                 else:
-                    ax.plot(values, linewidth=linewidth, alpha=alpha)
+                    ax.plot(values, linewidth=line_width, alpha=alpha)
                 mean = values.mean()
                 std = values.std(ddof=1)
                 ax.text(x_coord, y_coord, '{}: {:2.3f} +- {:2.3f}'.format(key,
@@ -218,25 +218,25 @@ class CrossValidator:
         fns = scores[:, 2]
         tps = scores[:, 3]
         acc_vector = (tps + tns) / (tps + fns + fps + tns)
-        prec_vector = tps / (tps + fps + 0.001)
+        precision_vector = tps / (tps + fps + 0.001)
         rec_vector = tps / (tps + fns + 0.001)
         spec_vector = tns / (tns + fps + 0.001)
-        fscore_vector = 2 * (prec_vector * rec_vector) / (prec_vector + rec_vector + 0.0001)
+        f_score_vector = 2 * (precision_vector * rec_vector) / (precision_vector + rec_vector + 0.0001)
 
         keys = ['Accuracy', 'F1-Score', 'Sensitivity', 'Specificity']
         fig, ax = plt.subplots(figsize=(20, 8), dpi=dpi)
 
         x_coord = 0.8
         y_coord = 0.02
-        for key, values in zip(keys, [acc_vector, fscore_vector, rec_vector, spec_vector]):
-            linewidth = 1
+        for key, values in zip(keys, [acc_vector, f_score_vector, rec_vector, spec_vector]):
+            line_width = 1
             alpha = 0.6
             if key == 'Accuracy':
-                linewidth = 2
+                line_width = 2
                 alpha = 0.8
-                ax.plot(values, linewidth=linewidth, marker='o', alpha=alpha)
+                ax.plot(values, linewidth=line_width, marker='o', alpha=alpha)
             else:
-                ax.plot(values, linewidth=linewidth, alpha=alpha)
+                ax.plot(values, linewidth=line_width, alpha=alpha)
             mean = values.mean()
             std = values.std(ddof=1)
             ax.text(x_coord, y_coord, '{}: {:2.3f} +- {:2.3f}'.format(key,
@@ -552,7 +552,7 @@ class StatisticalTester:
         fn1 = res1_path.split('/')[-1]
         fn2 = res2_path.split('/')[-1]
         print("H0: x({}) <= x({})".format(fn1, fn2))
-        acc_diff, fscore_diff, l_diff = self._get_diffs_mode1(res1_path, res2_path)
+        acc_diff, f_score_diff = self._get_diffs_mode1(res1_path, res2_path)
 
         t_stat, p_val = ttest_1samp(acc_diff, 0)
         rejection = (p_val / 2 < self.alpha) and (t_stat > 0)
@@ -561,21 +561,14 @@ class StatisticalTester:
         if rejection:
             print('     P-value: ', p_val)
 
-        t_stat, p_val = ttest_1samp(fscore_diff, 0)
+        t_stat, p_val = ttest_1samp(f_score_diff, 0)
         rejection = (p_val / 2 < self.alpha) and (t_stat > 0)
         print(' F1-scores:')
         print('     Rejection: ', rejection)
         if rejection:
             print('     P-value: ', p_val)
 
-        t_stat, p_val = ttest_1samp(l_diff, 0)
-        rejection = (p_val / 2 < self.alpha) and (t_stat > 0)
-        print(' Losses:')
-        print('     Rejection: ', rejection)
-        if rejection:
-            print('     P-value: ', p_val)
-
-        acc_diff, fscore_diff = self._get_diffs_mode2(res1_path, res2_path)
+        acc_diff, f_score_diff = self._get_diffs_mode2(res1_path, res2_path)
 
         t_stat, p_val = ttest_1samp(acc_diff, 0)
         rejection = (p_val / 2 < self.alpha) and (t_stat > 0)
@@ -584,7 +577,7 @@ class StatisticalTester:
         if rejection:
             print('     P-value: ', p_val)
 
-        t_stat, p_val = ttest_1samp(fscore_diff, 0)
+        t_stat, p_val = ttest_1samp(f_score_diff, 0)
         rejection = (p_val / 2 < self.alpha) and (t_stat > 0)
         print(' F1-scores (SW):')
         print('     Rejection: ', rejection)
@@ -596,37 +589,35 @@ class StatisticalTester:
         res1 = np.load(res1_path, allow_pickle=True)[:, 0]
         res2 = np.load(res2_path, allow_pickle=True)[:, 0]
 
-        l_diff = np.zeros(100)
         acc_diff = np.zeros(100)
-        fscore_diff = np.zeros(100)
+        f_score_diff = np.zeros(100)
         for i in range(100):
-            l1, acc1, fscore_1 = res1[i][:3]
-            l2, acc2, fscore_2 = res2[i][:3]
-            l_diff[i] = l1 - l2
+            acc1, fscore_1 = res1[i][:2]
+            acc2, fscore_2 = res2[i][:2]
             acc_diff[i] = acc1 - acc2
-            fscore_diff[i] = fscore_1 - fscore_2
-        return acc_diff, fscore_diff, l_diff
+            f_score_diff[i] = fscore_1 - fscore_2
+        return acc_diff, f_score_diff
 
     def _get_diffs_mode2(self, res1_path, res2_path):
         res1 = np.load(res1_path, allow_pickle=True)[:, 1]
         res2 = np.load(res2_path, allow_pickle=True)[:, 1]
 
         acc_diff = np.zeros(100)
-        fscore_diff = np.zeros(100)
+        f_score_diff = np.zeros(100)
         for i in range(100):
-            acc1, fscore1 = self._get_subject_wise_scores(res1[i])
-            acc2, fscore2 = self._get_subject_wise_scores(res2[i])
+            acc1, f_score1 = self._get_subject_wise_scores(res1[i])
+            acc2, f_score2 = self._get_subject_wise_scores(res2[i])
 
             acc_diff[i] = acc1 - acc2
-            fscore_diff[i] = fscore1 - fscore2
-        return acc_diff, fscore_diff
+            f_score_diff[i] = f_score1 - f_score2
+        return acc_diff, f_score_diff
 
     @staticmethod
     def _get_subject_wise_scores(res):
         tns, fps, fns, tps = res
         acc_vector = (tps + tns) / (tps + fns + fps + tns)
-        prec_vector = tps / (tps + fps + 0.0001)
-        rec_vector = tps / (tps + fns + 0.0001)
-        spec_vector = tns / (tns + fps + 0.0001)
-        fscore_vector = 2 * (prec_vector * rec_vector) / (prec_vector + rec_vector + 0.0001)
-        return acc_vector, fscore_vector
+        precision_vector = tps / (tps + fps + 0.0001)
+        recall_vector = tps / (tps + fns + 0.0001)
+        specificity_vector = tns / (tns + fps + 0.0001)
+        f_score_vector = 2 * (precision_vector * recall_vector) / (precision_vector + recall_vector + 0.0001)
+        return acc_vector, f_score_vector
