@@ -343,7 +343,7 @@ class CrossValidator:
                                                                       indxs=test_ind)
 
         if self.use_early_stopping_callback:
-            es_callback = keras.callbacks.EarlyStopping(monitor='loss', min_delta=0.001, patience=5)
+            es_callback = keras.callbacks.EarlyStopping(monitor='loss', min_delta=0.005, patience=3)
             callbacks = [es_callback]
         else:
             callbacks = []
