@@ -133,14 +133,14 @@ class BaselineDeepEEG(BaseModel):
     """SpatioTemporal 1D CNN composed of 4 SpatioTemporalConv1D layers.
 
     Note:
-        Receptive field of each unit before GAP layer is 833 time-steps, about 3 seconds with sampling rate of 256,
-        i.e. each unit before time abstraction layer looks at 3 seconds of input multi-variate time-series.
+        Receptive field of each unit before GAP layer is about 600 time-steps, about 2 seconds with sampling rate of 256,
+        i.e. each unit before time abstraction layer looks at 2 seconds of input multi-variate time-series.
     """
 
     def __init__(self,
                  input_shape,
                  model_name='DeepEEG',
-                 n_kernels=(8, 6, 6, 4),
+                 n_kernels=(8, 6, 4),
                  spatial_dropout_rate=0.1,
                  dropout_rate=0.2,
                  pool_size=2,
