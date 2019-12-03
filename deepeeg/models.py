@@ -128,6 +128,87 @@ class ESTCNNModel(BaseModel):
         return out
 
 
+class EEGNet(BaseModel):
+
+    """Model proposed in:
+        EEGNet A Compact Convolutional Neural Network for EEG-based Brain-Computer Interfaces
+
+    Source paper: https://arxiv.org/abs/1611.08024
+
+    Original implementation: https://github.com/vlawhern/arl-eegmodels/blob/master/EEGModels.py
+
+    Note: BatchNormalization raises this error on tensorflow v1.14 and channels_first:
+    ValueError: Shape must be rank 1 but is rank 0 for 'batch_normalization_2/cond/Reshape_4' (op: 'Reshape') with input shapes: [1,8,1,1], [].
+    So I changed architecture to handle channels_last config because of this error, and
+     I doubled the lengthes of temporal conv2d kernels and pooling sizes because of sampling rate 256 in my dataset.
+    """
+
+    def __init__(self,
+                 input_shape,
+                 model_name='eegnet',
+                 dropout_rate=0.5,
+                 kernel_length=64,
+                 f1=8,
+                 d=2,
+                 f2=16,
+                 norm_rate=0.25):
+        super().__init__(input_shape, model_name)
+        self.dropout_rate = dropout_rate
+        self.kernel_length = kernel_length
+        self.f1 = f1
+        self.d = d
+        self.f2 = f2
+        self.norm_rate = norm_rate
+        if keras.backend.image_data_format() != 'channels_last':
+            keras.backend.set_image_data_format('channels_last')
+
+    def create_model(self):
+        samples, channels = self.input_shape_
+        input_tensor = keras.layers.Input(shape=self.input_shape_)
+        input1 = keras.layers.Permute((2, 1))(input_tensor)
+        input1 = keras.layers.Lambda(keras.backend.expand_dims,
+                                     arguments={'axis': -1},
+                                     name='eegnet_standard_input')(input1)
+
+        block1 = keras.layers.Conv2D(self.f1,
+                                     (1, 2 * self.kernel_length),
+                                     padding='same',
+                                     use_bias=False)(input1)
+
+        block1 = keras.layers.BatchNormalization(axis=-1)(block1)
+        block1 = keras.layers.DepthwiseConv2D((channels, 1),
+                                              use_bias=False,
+                                              depth_multiplier=self.d,
+                                              depthwise_constraint=keras.constraints.max_norm(1.))(block1)
+        block1 = keras.layers.BatchNormalization(axis=-1)(block1)
+        block1 = keras.layers.Activation('relu')(block1)
+        block1 = keras.layers.AveragePooling2D((1, 2 * 4))(block1)
+        block1 = keras.layers.Dropout(self.dropout_rate)(block1)
+
+        block2 = keras.layers.SeparableConv2D(self.f2,
+                                              (1, 2 * 16),
+                                              use_bias=False,
+                                              padding='same')(block1)
+        block2 = keras.layers.BatchNormalization(axis=-1)(block2)
+        block2 = keras.layers.Activation('relu')(block2)
+        block2 = keras.layers.AveragePooling2D((1, 2 * 8))(block2)
+        block2 = keras.layers.Dropout(self.dropout_rate)(block2)
+
+        flatten = keras.layers.Flatten(name='flatten')(block2)
+
+        dense = keras.layers.Dense(1,
+                                   name='dense',
+                                   kernel_constraint=keras.constraints.max_norm(self.norm_rate))(flatten)
+        output = keras.layers.Activation('sigmoid',
+                                         name='output')(dense)
+
+        model = keras.Model(inputs=input_tensor,
+                            outputs=output)
+        self.model_ = model
+
+        return model
+
+
 class BaselineDeepEEG(BaseModel):
 
     """SpatioTemporal 1D CNN composed of 4 SpatioTemporalConv1D layers.
