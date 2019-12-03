@@ -530,7 +530,7 @@ class StatisticalTester:
             print('Can not find any score file.')
             return
         if reference_file is not None:
-            l = [i for i in scores_paths if i.split('/')[-1] == reference_file]
+            l = [i for i in scores_paths if os.path.basename(i) == reference_file]
             if not l:
                 print('reference file not found.')
                 return
@@ -551,7 +551,7 @@ class StatisticalTester:
         """
         fn1 = res1_path.split('/')[-1]
         fn2 = res2_path.split('/')[-1]
-        print("H0: x({}) <= x({})".format(fn1, fn2))
+        print("H0: x({}) <= x({})".format(os.path.basename(fn1), os.path.basename(fn2)))
         acc_diff, f_score_diff = self._get_diffs_mode1(res1_path, res2_path)
 
         t_stat, p_val = ttest_1samp(acc_diff, 0)
