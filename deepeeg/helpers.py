@@ -344,7 +344,7 @@ class CrossValidator:
                             verbose=False,
                             callbacks=callbacks)
 
-        x_test, y_test = self._generate_data_subset(test_gen, n_iter_test)
+        x_test, y_test = self._generate_data_subset(test_gen, n_iter_test, self.test_generator.is_fixed)
 
         scores = [list() for _ in range(4)]
 
@@ -366,7 +366,7 @@ class CrossValidator:
                                                            model))
 
         # Add train scores
-        x_train, y_train = self._generate_data_subset(train_gen, n_iter_train)
+        x_train, y_train = self._generate_data_subset(train_gen, n_iter_train, self.train_generator.is_fixed)
         train_scores = self._calc_scores(model, x_train, y_train)
         scores[3].extend(train_scores)
         print('     train scores: ', train_scores)
@@ -392,11 +392,11 @@ class CrossValidator:
         return train_gen, n_iter_train, test_gen, n_iter_test
 
     @staticmethod
-    def _generate_data_subset(gen, n_iter):
+    def _generate_data_subset(gen, n_iter, is_fixed):
         x = list()
         y = list()
 
-        if not gen.is_fixed:
+        if not is_fixed:
             for i in range(n_iter):
                 x_batch, y_batch = next(gen)
                 x.append(x_batch)
