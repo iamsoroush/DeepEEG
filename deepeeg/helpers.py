@@ -430,7 +430,7 @@ class CrossValidator:
             y_true = np.array(y_true)
         else:
             y_true = y
-            y_pred = model.predict(y_true)
+            y_pred = model.predict(x)
         scores.append(mean_squared_error(y_true, y_pred))
         y_pred = np.where(y_pred > 0.5, 1, 0)
         tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
