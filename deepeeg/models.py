@@ -275,9 +275,9 @@ class BaselineDeepEEG(BaseModel):
         elif self.attention == 'v1':
             x = TemporalAttention(bias=self.use_bias)(x)
         elif self.attention == 'v2':
-            x = TemporalAttentionV2(self.use_bias)(x)
+            x = TemporalAttentionV2(bias=self.use_bias)(x)
         else:
-            x = TemporalAttentionV3(self.use_bias)(x)
+            x = TemporalAttentionV3(bias=self.use_bias)(x)
 
         # Logistic regression unit
         output_tensor = keras.layers.Dense(1, activation='sigmoid', use_bias=self.use_bias, name='output')(x)
@@ -367,9 +367,9 @@ class DilatedDeepEEG(BaselineDeepEEG):
         elif self.attention == 'v1':
             x = TemporalAttention(bias=self.use_bias)(x)
         elif self.attention == 'v2':
-            x = TemporalAttentionV2(self.use_bias)(x)
+            x = TemporalAttentionV2(bias=self.use_bias)(x)
         else:
-            x = TemporalAttentionV3(self.use_bias)(x)
+            x = TemporalAttentionV3(bias=self.use_bias)(x)
 
         # Logistic regression unit
         output_tensor = keras.layers.Dense(1, activation='sigmoid', use_bias=self.use_bias, name='output')(x)
@@ -467,9 +467,9 @@ class LightDilatedDeepEEG(BaselineDeepEEG):
         elif self.attention == 'v1':
             x = TemporalAttention(bias=self.use_bias)(x)
         elif self.attention == 'v2':
-            x = TemporalAttentionV2(self.use_bias)(x)
+            x = TemporalAttentionV2(bias=self.use_bias)(x)
         else:
-            x = TemporalAttentionV3(self.use_bias)(x)
+            x = TemporalAttentionV3(bias=self.use_bias)(x)
 
         # Logistic regression unit
         output_tensor = keras.layers.Dense(1, activation='sigmoid', use_bias=self.use_bias, name='output')(x)
@@ -565,9 +565,9 @@ class WindowedDeepEEG(BaselineDeepEEG):
         elif self.attention == 'v1':
             x = TemporalAttention(bias=self.use_bias)(x)
         elif self.attention == 'v2':
-            x = TemporalAttentionV2(self.use_bias)(x)
+            x = TemporalAttentionV2(bias=self.use_bias)(x)
         else:
-            x = TemporalAttentionV3(self.use_bias)(x)
+            x = TemporalAttentionV3(bias=self.use_bias)(x)
 
         # Logistic regression unit
         output_tensor = keras.layers.Dense(1, activation='sigmoid', use_bias=self.use_bias, name='output')(x)
