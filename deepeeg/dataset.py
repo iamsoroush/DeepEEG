@@ -312,7 +312,7 @@ class VarLenGenerator(Generator):
         super().__init__(False,
                          is_train)
         assert normalization in ('channel', 'instance', 'time'), \
-            "passed vale for normalization arg should be one of " \
+            "passed value for normalization arg should be one of " \
             "('channel', 'instance', 'time')"
         self.normalization = normalization
         self.min_duration = min_duration
@@ -367,6 +367,7 @@ class VarLenGenerator(Generator):
                 ch_wise_mean = sub_array.mean(axis=0, keepdims=True)
                 ch_wise_std = sub_array.std(axis=0, keepdims=True)
                 if np.any(ch_wise_std > 80) or np.any(ch_wise_std < 1):
+                    cursor = end_ind
                     continue
                 sub_array = (sub_array - ch_wise_mean) / (ch_wise_std + 0.00001)
             else:
