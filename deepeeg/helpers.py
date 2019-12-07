@@ -325,22 +325,10 @@ class CrossValidator:
         loss = model_obj.loss
         optimizer = model_obj.optimizer
 
-        if self.data_mode == 'cross_subject':
-            train_data = [data[j] for j in train_ind]
-            train_labels = [labels[j] for j in train_ind]
-            test_data = [data[j] for j in test_ind]
-            test_labels = [labels[j] for j in test_ind]
-            train_gen, n_iter_train = self.train_generator.get_generator(data=train_data,
-                                                                         labels=train_labels)
-            test_gen, n_iter_test = self.test_generator.get_generator(data=test_data,
-                                                                      labels=test_labels)
-        else:
-            train_gen, n_iter_train = self.train_generator.get_generator(data=data,
-                                                                         labels=labels,
-                                                                         indxs=train_ind)
-            test_gen, n_iter_test = self.test_generator.get_generator(data=data,
-                                                                      labels=labels,
-                                                                      indxs=test_ind)
+        train_gen, n_iter_train, test_gen, n_iter_test = self._get_data_generators(data,
+                                                                                   labels,
+                                                                                   train_ind,
+                                                                                   test_ind)
 
         if self.use_early_stopping_callback:
             es_callback = keras.callbacks.EarlyStopping(monitor='loss', min_delta=0.005, patience=3)
@@ -384,32 +372,71 @@ class CrossValidator:
         print('     train scores: ', train_scores)
         return np.array(scores)
 
+    def _get_data_generators(self, data, labels, train_ind, test_ind):
+        if self.data_mode == 'cross_subject':
+            train_data = [data[j] for j in train_ind]
+            train_labels = [labels[j] for j in train_ind]
+            test_data = [data[j] for j in test_ind]
+            test_labels = [labels[j] for j in test_ind]
+            train_gen, n_iter_train = self.train_generator.get_generator(data=train_data,
+                                                                         labels=train_labels)
+            test_gen, n_iter_test = self.test_generator.get_generator(data=test_data,
+                                                                      labels=test_labels)
+        else:
+            train_gen, n_iter_train = self.train_generator.get_generator(data=data,
+                                                                         labels=labels,
+                                                                         indxs=train_ind)
+            test_gen, n_iter_test = self.test_generator.get_generator(data=data,
+                                                                      labels=labels,
+                                                                      indxs=test_ind)
+        return train_gen, n_iter_train, test_gen, n_iter_test
+
     @staticmethod
     def _generate_data_subset(gen, n_iter):
         x = list()
         y = list()
 
-        for i in range(n_iter):
-            x_batch, y_batch = next(gen)
-            x.extend(x_batch)
-            y.extend(y_batch)
-        x = np.array(x)
-        y = np.array(y)
+        if not gen.is_fixed:
+            for i in range(n_iter):
+                x_batch, y_batch = next(gen)
+                x.append(x_batch)
+                y.append(y_batch)
+        else:
+            for i in range(n_iter):
+                x_batch, y_batch = next(gen)
+                x.extend(x_batch)
+                y.extend(y_batch)
+            x = np.array(x)
+            y = np.array(y)
         return x, y
 
     @staticmethod
     def _calc_scores(model,
                      x,
                      y):
-        scores = list()
+        """Calculates scores for accuracy, f1-score, sensitivity and specificity.
 
-        y_pred = model.predict(x)
-        scores.append(mean_squared_error(y, y_pred))
+        x, y are lists of data batches.
+        """
+
+        scores = list()
+        if not isinstance(y, np.ndarray):  # the generator of data wasn't of fixed type
+            y_pred = list()
+            y_true = list()
+            for x_batch, y_batch in zip(x, y):
+                y_pred.extend(model.predict(x_batch).tolist())
+                y_true.extend(y_batch)
+            y_pred = np.array(y_pred)
+            y_true = np.array(y_true)
+        else:
+            y_true = y
+            y_pred = model.predict(y_true)
+        scores.append(mean_squared_error(y_true, y_pred))
         y_pred = np.where(y_pred > 0.5, 1, 0)
-        tn, fp, fn, tp = confusion_matrix(y, y_pred).ravel()
+        tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
 
         acc = (tp + tn) / (tp + tn + fp + fn)
-        f_score = f1_score(y, y_pred)
+        f_score = f1_score(y_true, y_pred)
         sensitivity = tp / (tp + fn)
         specificity = tn / (tn + fp)
 
