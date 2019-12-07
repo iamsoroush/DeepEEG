@@ -41,13 +41,13 @@ class DataLoader:
     def load_data(self):
         """Loads data according to given data_mode.
 
-        Normalizing the data instances isn't applied on this stage. Make sure to normalize the instances when
+        Normalizing the data instances have not applied on this stage. Make sure to normalize the instances when
          feeding to model, i.e. on data generators.
         """
 
         if self.data_mode == 'balanced':
             assert isinstance(self.instance_duration, int) and isinstance(self.instance_overlap, int),\
-                "make sure to et instance_duration and instance_overlap arguments."
+                "make sure to set instance_duration and instance_overlap arguments."
             data_files, raw_labels = self._correct_data()
 
             data = list()
