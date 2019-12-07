@@ -5,6 +5,7 @@
 import os
 import pickle
 from itertools import combinations
+from time import sleep
 
 import numpy as np
 from sklearn.model_selection import StratifiedKFold
@@ -343,6 +344,8 @@ class CrossValidator:
                             epochs=self.epochs,
                             verbose=False,
                             callbacks=callbacks)
+
+        sleep(1)
 
         x_test, y_test = self._generate_data_subset(test_gen, n_iter_test, self.test_generator.is_fixed)
 
