@@ -273,14 +273,14 @@ class BaselineDeepEEG(BaseModel):
         if self.attention is None:
             x = keras.layers.GlobalAveragePooling1D()(x)
         elif self.attention == 'v1':
-            x = TemporalAttention()(x)
+            x = TemporalAttention(bias=self.use_bias)(x)
         elif self.attention == 'v2':
-            x = TemporalAttentionV2()(x)
+            x = TemporalAttentionV2(self.use_bias)(x)
         else:
-            x = TemporalAttentionV3()(x)
+            x = TemporalAttentionV3(self.use_bias)(x)
 
         # Logistic regression unit
-        output_tensor = keras.layers.Dense(1, activation='sigmoid', name='output')(x)
+        output_tensor = keras.layers.Dense(1, activation='sigmoid', use_bias=self.use_bias, name='output')(x)
 
         model = keras.Model(input_tensor, output_tensor)
         self.model_ = model
@@ -365,14 +365,14 @@ class DilatedDeepEEG(BaselineDeepEEG):
         if self.attention is None:
             x = keras.layers.GlobalAveragePooling1D()(x)
         elif self.attention == 'v1':
-            x = TemporalAttention()(x)
+            x = TemporalAttention(bias=self.use_bias)(x)
         elif self.attention == 'v2':
-            x = TemporalAttentionV2()(x)
+            x = TemporalAttentionV2(self.use_bias)(x)
         else:
-            x = TemporalAttentionV3()(x)
+            x = TemporalAttentionV3(self.use_bias)(x)
 
         # Logistic regression unit
-        output_tensor = keras.layers.Dense(1, activation='sigmoid', name='output')(x)
+        output_tensor = keras.layers.Dense(1, activation='sigmoid', use_bias=self.use_bias, name='output')(x)
 
         model = keras.Model(input_tensor, output_tensor)
         self.model_ = model
@@ -465,14 +465,14 @@ class LightDilatedDeepEEG(BaselineDeepEEG):
         if self.attention is None:
             x = keras.layers.GlobalAveragePooling1D()(x)
         elif self.attention == 'v1':
-            x = TemporalAttention()(x)
+            x = TemporalAttention(bias=self.use_bias)(x)
         elif self.attention == 'v2':
-            x = TemporalAttentionV2()(x)
+            x = TemporalAttentionV2(self.use_bias)(x)
         else:
-            x = TemporalAttentionV3()(x)
+            x = TemporalAttentionV3(self.use_bias)(x)
 
         # Logistic regression unit
-        output_tensor = keras.layers.Dense(1, activation='sigmoid', name='output')(x)
+        output_tensor = keras.layers.Dense(1, activation='sigmoid', use_bias=self.use_bias, name='output')(x)
 
         model = keras.Model(input_tensor, output_tensor)
         self.model_ = model
@@ -563,14 +563,14 @@ class WindowedDeepEEG(BaselineDeepEEG):
         if self.attention is None:
             x = keras.layers.GlobalAveragePooling1D()(x)
         elif self.attention == 'v1':
-            x = TemporalAttention()(x)
+            x = TemporalAttention(bias=self.use_bias)(x)
         elif self.attention == 'v2':
-            x = TemporalAttentionV2()(x)
+            x = TemporalAttentionV2(self.use_bias)(x)
         else:
-            x = TemporalAttentionV3()(x)
+            x = TemporalAttentionV3(self.use_bias)(x)
 
         # Logistic regression unit
-        output_tensor = keras.layers.Dense(1, activation='sigmoid', name='output')(x)
+        output_tensor = keras.layers.Dense(1, activation='sigmoid', use_bias=self.use_bias, name='output')(x)
 
         model = keras.Model(input_tensor, output_tensor)
         self.model_ = model
