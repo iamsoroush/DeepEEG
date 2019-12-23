@@ -15,8 +15,6 @@ import matplotlib.pyplot as plt
 
 from . import keras
 
-plt.style.use('seaborn-darkgrid')
-
 
 class CrossValidator:
 
@@ -485,7 +483,7 @@ class CrossValidator:
 
         Returns:
             [[fpr_0dropped, fpr_1dropped, fpr_4dropped, fpr_9dropped],
-             [tpr_0dropped, tpr_1dropped, tpr_4dropped, fpr_9dropped],
+             [tpr_0dropped, tpr_1dropped, tpr_4dropped, tpr_9dropped],
              [thresholds_0dropped, thresholds_1dropped, thresholds_4dropped, thresholds_9dropped],
              [roc_auc_0dropped, roc_auc_1dropped, roc_auc_4dropped, roc_auc_9dropped]]
         """
@@ -545,6 +543,77 @@ class CrossValidator:
         for i, channels in enumerate(to_drop):
             dropped_x[i, :, channels] = 0
         return dropped_x
+
+
+class Result:
+
+    def __init__(self,
+                 data,
+                 model_name):
+        self.data = data
+        self.model_name = model_name
+
+    def get_test_acc(self):
+        return self.data[:, 0, 0]
+
+    def get_test_fscore(self):
+        return self.data[:, 0, 1]
+
+    def get_test_sensitivity(self):
+        return self.data[:, 0, 2]
+
+    def get_test_specificity(self):
+        return self.data[:, 0, 3]
+
+    def get_train_acc(self):
+        return self.data[:, 3, 0]
+
+    def get_train_fscore(self):
+        return self.data[:, 3, 1]
+
+    def get_train_sensitivity(self):
+        return self.data[:, 3, 2]
+
+    def get_train_specificity(self):
+        return self.data[:, 3, 3]
+
+    def _get_rocaucs(self):
+        return self.data[:, 2, -1]
+
+    def get_roc_curves(self):
+        rocaucs = self._get_rocaucs()
+        return np.array([i[0] for i in rocaucs])
+
+    def get_roc_1channel_drop(self):
+        rocaucs = self._get_rocaucs()
+        return np.array([i[1] for i in rocaucs])
+
+    def get_roc_4channel_drop(self):
+        rocaucs = self._get_rocaucs()
+        return np.array([i[2] for i in rocaucs])
+
+    def get_roc_9channel_drop(self):
+        rocaucs = self._get_rocaucs()
+        return np.array([i[3] for i in rocaucs])
+
+    def get_sw_acc(self):
+        tn, fp, fn, tp = self._get_sw_data()
+        acc_vector = (tp + tn) / (tp + fn + fp + tn)
+        return acc_vector
+
+    def get_sw_fscore(self):
+        tn, fp, fn, tp = self._get_sw_data()
+        precision_vector = tp / (tp + fp + 0.0001)
+        recall_vector = tp / (tp + fn + 0.0001)
+        f_score_vector = 2 * (precision_vector * recall_vector) / (precision_vector + recall_vector + 0.0001)
+        return f_score_vector
+
+    def _get_sw_data(self):
+        tn = self.data[:, 1, 0]
+        fp = self.data[:, 1, 1]
+        fn = self.data[:, 1, 2]
+        tp = self.data[:, 1, 3]
+        return tn, fp, fn, tp
 
 
 class StatisticalTester:
