@@ -3,12 +3,9 @@
 """
 # Author: Soroush Moazed <soroush.moazed@gmail.com>
 
-import matplotlib.pyplot as plt
 
 from .custom_layers import InstanceNormalization, TemporalAttention, TemporalAttentionV2, TemporalAttentionV3
 from . import keras
-
-plt.style.use('ggplot')
 
 
 class BaseModel:
