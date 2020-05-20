@@ -45,5 +45,5 @@ We have compared our model on _Repponder_ vs. _Non-Responder_ task with some oth
 | [_E-ST-CNN_](https://ieeexplore.ieee.org/document/8607897)      | 153,093 | 0.4 (0.09) |
 | [_Conv2DModel_](https://onlinelibrary.wiley.com/doi/10.1002/spe.2668)      | 3,550,069 | 0.03 (0.11) |
 | [_EEGNet_](https://arxiv.org/abs/1611.08024)      | **2,305** | 0.6 (0.2) |
-| _DeepEEG_ (ours)      | 8,804 | **0.67** (0.15) |
+| _DeepEEG_ (ours)(DFB + TemporalAttention)   | 8,804 | **0.67** (0.15) |
 
