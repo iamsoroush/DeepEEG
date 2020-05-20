@@ -1,7 +1,7 @@
 # DeepEEG
 Deep feature learning using a specially designed __CNN__ for processing raw EEG data in order to predict MDD patient's response to SSRI treatment.
 
-In this project, we have proposed two new Convolution blocks which aim to reduce parameters of conventional Temporal Convolution blocks which makes it plausible to train deep CNN models to classify multi-variate time-series data constrained with limited amount of training data, which is the case in classifying resting state EEG signals. These blocks named as **WFB** and **DFB** are designed to force the model learn spatio-temporal features that capture the frequency components of various frequency bands. DFB mimics the wavelet transform but as a learnable spatio-temporal filter-bank, in the other side the WFB mimics the FFT in extracting various frequency components from a window, but it is a learnable transforma and the earned features are spatio-temporal rather than temporal. We show that the DFB blocks are superior in terms of improving accuracy, f1-score and decreasing the number of parameters.
+In this project, we have proposed two new Convolution blocks which aim to reduce parameters of conventional Temporal Convolution blocks which makes it plausible to train deep CNN models to classify multi-variate time-series data constrained with limited amount of training data, which is the case in classifying resting state EEG signals. These blocks named as **WFB**(Windowed Filter-Bank) and **DFB**(Dilated Filter-Bank) are designed to force the model learn spatio-temporal features that capture the frequency components of various frequency bands. DFB mimics the wavelet transform but as a learnable spatio-temporal filter-bank, in the other side the WFB mimics the FFT in extracting various frequency components from a window, but it is a learnable transforma and the earned features are spatio-temporal rather than temporal. We show that the DFB blocks are superior in terms of improving accuracy, f1-score and decreasing the number of parameters.
 
 Comparing the architecture design choices proves the superiority of wavelet-like Conv1D blocks (results on _Repponder_ vs. _Non-Responder_ task):
 
@@ -20,6 +20,11 @@ Here's a simple schema which shows the overall model's architecture:
 
 ![alt text](https://github.com/iamsoroush/DeepEEG/blob/master/deep_eeg_arch.jpg "DeepEEG Architecture")
 
+
+
+And here's an intuitive presentation of how **DFB** and **WFB** work:
+
+![alt text](https://github.com/iamsoroush/DeepEEG/blob/master/st-dfb-wfb.jpg "ST-DFB and ST-WFB")
 
 
 # How to use
